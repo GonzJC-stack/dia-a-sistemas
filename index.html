@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ING.SISTEMAS</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    color: #00ff66;
+    text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Fondo GIF */
+.fondo {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+
+/* Overlay oscuro */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: -1;
+}
+
+.container {
+    text-align: center;
+}
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #00ff66;
+    background: black;
+    color: #00ff66;
+    font-size: 16px;
+    text-align: center;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+    background-color: #00ff66;
+    color: black;
+    font-weight: bold;
+}
+
+#mensajeFinal {
+    color: #00ff66;
+    font-family: "Courier New", monospace;
+    text-align: center;
+    font-size: 28px;
+    text-shadow:
+        0 0 5px #00ff66,
+        0 0 10px #00ff66,
+        0 0 20px #00ff66;
+    letter-spacing: 2px;
+}
+
+@keyframes flicker {
+    0% {opacity:1;}
+    50% {opacity:0.85;}
+    100% {opacity:1;}
+}
+
+.flicker {
+    animation: flicker 2s infinite;
+}
+
+
+/* Personaje */
+.personaje {
+    width: 120px;          
+    margin-top: 18px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    animation: bounce 1.2s infinite ease-in-out;
+}
+
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0); }
+}
+
+/* Estrellas */
+.estrella {
+    position: absolute;
+    font-size: 20px;
+    animation: caer 3s linear forwards;
+}
+
+@keyframes caer {
+    from { transform: translateY(-50px); opacity: 1; }
+    to { transform: translateY(100vh); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<img src="gif/fondo.gif" class="fondo">
+<div class="overlay"></div>
+
+<div class="container" id="login">
+    <h2>ENTER PASSWORD</h2>
+    <input type="password" id="password" placeholder="********">
+    <br>
+    <button onclick="verificar()">START</button>
+</div>
+
+<div id="mensajeFinal"></div>
+
+<script>
+
+let audioActual = null;
+
+const personas = {
+    "serna": {
+        mensaje: 'ÉCHALE GANAS',
+        gif: "gif/bomberman.gif",
+        audio: "audio/bomberman.mp3"
+    },
+    "julieta": {
+        mensaje: 'MUCHAS GRACIAS POR AYUDARME',
+        gif: "gif/pikachu.gif",
+        audio: "audio/pikachu.mp3"
+    },
+    "vianey": {
+        mensaje: 'ÁNIMO, TÚ PUEDES',
+        gif: "gif/kirby.gif",
+        audio: "audio/kirby.mp3"
+    },
+    "leyda": {
+        mensaje: 'SIGAMOS ESFORZÁNDONOS',
+        gif: "gif/yoshi.gif",
+        audio: "audio/yoshi.mp3"
+    },
+    "vega": {
+        mensaje: 'SIGAMOS ADELANTE. SÍ SE PUEDE',
+        gif: "gif/megaman.gif",
+        audio: "audio/megaman.mp3"
+    },
+    "dani": {
+        mensaje: 'ESPERO PODAMOS SEGUIR EN EL SIGUIENTE CUATRI',
+        gif: "gif/link.gif",
+        audio: "audio/link.mp3"
+    }
+};
+
+function verificar() {
+    const pass = document.getElementById("password").value.toLowerCase();
+
+    if (personas[pass]) {
+
+        document.getElementById("login").style.display = "none";
+
+        const mensajeDiv = document.getElementById("mensajeFinal");
+        mensajeDiv.style.display = "block";
+
+        reproducirAudio(personas[pass].audio);
+
+        escribirMensaje(personas[pass].mensaje, () => {
+            lanzarEstrellas();
+            agregarPersonaje(personas[pass].gif);
+        });
+
+    } else {
+        alert("ACCESS DENIED");
+    }
+}
+
+function escribirMensaje(texto, callback) {
+    const mensajeDiv = document.getElementById("mensajeFinal");
+    mensajeDiv.innerHTML = "";
+
+    let i = 0;
+    const intervalo = setInterval(() => {
+        mensajeDiv.innerHTML += texto.charAt(i);
+        i++;
+        if (i >= texto.length) {
+            clearInterval(intervalo);
+            setTimeout(callback, 800);
+        }
+    }, 40);
+}
+
+function reproducirAudio(src) {
+    if(audioActual) {
+        audioActual.pause();
+    }
+    audioActual = new Audio(src);
+    audioActual.loop = false;
+    audioActual.play();
+}
+
+function lanzarEstrellas() {
+    for (let i = 0; i < 30; i++) {
+        const estrella = document.createElement("div");
+        estrella.classList.add("estrella");
+        estrella.innerHTML = "★";
+        estrella.style.left = Math.random() * window.innerWidth + "px";
+        estrella.style.top = Math.random() * -200 + "px";
+        estrella.style.fontSize = (Math.random() * 20 + 10) + "px";
+        document.body.appendChild(estrella);
+
+        setTimeout(() => {
+            estrella.remove();
+        }, 3000);
+    }
+}
+
+function agregarPersonaje(src) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.classList.add("personaje");
+    document.getElementById("mensajeFinal").appendChild(img);
+}
+
+</script>
+
+</body>
+</html>
